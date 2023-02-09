@@ -1,2 +1,172 @@
-import {sayHello} from "@/hello";
-console.log(sayHello('world'))
+import { execSync } from 'child_process'
+import parse from 'yargs-parser'
+import axios from 'axios'
+import prompts from 'prompts'
+import { extract } from 'tar'
+import { basename, join, relative } from 'path'
+import * as fs from 'fs'
+const cwd = process.cwd()
+let project: string
+let rootDir: string
+const argv = parse(process.argv.slice(2), {
+    alias: {
+        forced: ['f'],
+        mirror: ['m'],
+        template: ['t'],
+        yes: ['y'],
+    },
+})
+
+function getRef() {
+    if (!argv.ref) return 'refs/heads/master'
+    if (argv.ref.startsWith('refs/')) return argv.ref
+    if (/^[0-9a-f]{40}$/.test(argv.ref)) return argv.ref
+    return `refs/heads/${argv.ref}`
+}
+function supports(command: string) {
+    try {
+        execSync(command)
+        return true
+    } catch {
+        return false
+    }
+}
+
+async function getName() {
+    if (argv._[0]) return '' + argv._[0]
+    const { name } = await prompts({
+        type: 'text',
+        name: 'name',
+        message: 'Project name:',
+        initial: 'koishi-app',
+    })
+    return name.trim() as string
+}
+async function prepare() {
+    if (!fs.existsSync(rootDir)) {
+        return fs.mkdirSync(rootDir, { recursive: true })
+    }
+
+    const files = fs.readdirSync(rootDir)
+    if (!files.length) return
+
+    if (!argv.forced && !argv.yes) {
+        console.log(`  Target directory "${project}" is not empty.`)
+        const yes = await confirm('Remove existing files and continue?')
+        if (!yes) process.exit(0)
+    }
+
+    emptyDir(rootDir)
+}
+// baseline is Node 12 so can't use rmSync
+function emptyDir(root: string) {
+    for (const file of fs.readdirSync(root)) {
+        const abs = join(root, file)
+        if (fs.lstatSync(abs).isDirectory()) {
+            emptyDir(abs)
+            fs.rmdirSync(abs)
+        } else {
+            fs.unlinkSync(abs)
+        }
+    }
+}
+
+async function confirm(message: string) {
+    const { yes } = await prompts({
+        type: 'confirm',
+        name: 'yes',
+        initial: 'Y',
+        message,
+    })
+    return yes as boolean
+}
+async function scaffold() {
+
+    const mirror = process.env.GITHUB_MIRROR = argv.mirror || 'https://github.com'
+    const template = argv.template || 'zhinjs/boilerplate'
+    const url = `${mirror}/${template}/archive/${getRef()}.tar.gz`
+
+    try {
+        const { data } = await axios.get<NodeJS.ReadableStream>(url, { responseType: 'stream' })
+
+        await new Promise<void>((resolve, reject) => {
+            const stream = data.pipe(extract({ cwd: rootDir, newer: true, strip: 1 }))
+            stream.on('finish', resolve)
+            stream.on('error', reject)
+        })
+    } catch (err) {
+        if (!axios.isAxiosError(err) || !err.response) throw err
+        const { status, statusText } = err.response
+        console.log(`request failed with status code ${status} ${statusText}`)
+        process.exit(1)
+    }
+
+    writePackageJson()
+    writeEnvironment()
+
+    console.log('  Done.\n')
+}
+
+function writePackageJson() {
+    const filename = join(rootDir, 'package.json')
+    const meta = require(filename)
+    meta.name = project
+    fs.writeFileSync(filename, JSON.stringify(meta, null, 2))
+}
+
+function writeEnvironment() {
+    const filename = join(rootDir, '.env')
+    if (!fs.existsSync(filename)) return
+    const content = fs.readFileSync(filename, 'utf8').split('\n').map((line) => {
+        if (!line.startsWith('GITHUB_MIRROR = ')) return line
+        return `GITHUB_MIRROR = ${process.env.GITHUB_MIRROR}`
+    }).join('\n')
+    fs.writeFileSync(filename, content)
+}
+
+async function initGit() {
+    if (argv.yes || !supports('git --version')) return
+    const yes = await confirm('Initialize Git for version control?')
+    if (!yes) return
+    execSync('git init', { stdio: 'ignore', cwd: rootDir })
+    console.log('  Done.\n')
+}
+
+async function install() {
+    // with `-y` option, we don't install dependencies
+    if (argv.yes) return
+
+    const yes = await confirm('Install and start it now?')
+    if (yes) {
+        execSync(['npm', 'install'].join(' '), { stdio: 'inherit', cwd: rootDir })
+        execSync(['npm', 'run', 'start'].join(' '), { stdio: 'inherit', cwd: rootDir })
+    } else {
+        console.log('You can start it later by:\n')
+        if (rootDir !== cwd) {
+            const related = relative(cwd, rootDir)
+            console.log(`  cd ${related}`)
+        }
+        console.log(`  npm install`)
+        console.log(`  npm run start`)
+        console.log()
+    }
+}
+
+async function start() {
+    console.log()
+    console.log(`  Create Zhin`)
+    console.log()
+
+    const name = await getName()
+    rootDir = join(cwd, name)
+    project = basename(rootDir)
+
+    await prepare()
+    await scaffold()
+    await initGit()
+    await install()
+}
+
+start().catch((e) => {
+    console.error(e)
+})

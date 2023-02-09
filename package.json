@@ -1,8 +1,8 @@
 {
-  "name": "@lc-cn/ts-dev-template",
-  "version": "1.0.0",
-  "description": "ts开发环境配置",
-  "main": "lib/index.js",
+  "name": "create-zhin",
+  "version": "0.0.1",
+  "description": "Setup a Zhin application",
+  "bin": "lib/index.js",
   "scripts": {
     "start": "node .",
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lc-cn/ts-dev-template.git"
+    "url": "git+https://github.com/@zhinjs/create-zhin.git"
   },
   "keywords": [
     "ts",
@@ -22,10 +22,12 @@
   "author": "凉菜",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lc-cn/ts-dev-template/issues"
+    "url": "https://github.com/@zhinjs/create-zhin/issues"
   },
-  "homepage": "https://github.com/lc-cn/ts-dev-template#readme",
+  "homepage": "https://github.com/@zhinjs/create-zhin#readme",
   "devDependencies": {
+    "@types/tar": "^6.1.3",
+    "@types/yargs-parser": "^21.0.0",
     "@types/node": "latest",
     "ts-node-dev": "latest",
     "tsc-alias": "latest",
@@ -37,5 +39,10 @@
     "/lib/**/*.d.ts",
     "/lib/**/LICENSE"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "axios": "~1.1.3",
+    "prompts": "^2.4.2",
+    "tar": "^6.1.13",
+    "yargs-parser": "^21.1.1"
+  }
 }
