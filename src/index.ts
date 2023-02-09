@@ -1,10 +1,12 @@
+#!/usr/bin/env node
 import { execSync } from 'child_process'
-import parse from 'yargs-parser'
-import axios from 'axios'
-import prompts from 'prompts'
+import parse = require('yargs-parser')
+import axios = require('axios')
+import prompts = require('prompts')
 import { extract } from 'tar'
 import { basename, join, relative } from 'path'
 import * as fs from 'fs'
+import {AxiosError} from "axios";
 const cwd = process.cwd()
 let project: string
 let rootDir: string
@@ -38,7 +40,7 @@ async function getName() {
         type: 'text',
         name: 'name',
         message: 'Project name:',
-        initial: 'koishi-app',
+        initial: 'zhin-app',
     })
     return name.trim() as string
 }
@@ -87,6 +89,7 @@ async function scaffold() {
     const url = `${mirror}/${template}/archive/${getRef()}.tar.gz`
 
     try {
+        // @ts-ignore
         const { data } = await axios.get<NodeJS.ReadableStream>(url, { responseType: 'stream' })
 
         await new Promise<void>((resolve, reject) => {
@@ -95,7 +98,7 @@ async function scaffold() {
             stream.on('error', reject)
         })
     } catch (err) {
-        if (!axios.isAxiosError(err) || !err.response) throw err
+        if (err instanceof AxiosError || !err.response) throw err
         const { status, statusText } = err.response
         console.log(`request failed with status code ${status} ${statusText}`)
         process.exit(1)
