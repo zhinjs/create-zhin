@@ -219,6 +219,19 @@ async function addBot() {
             ]
         }
     }
+    config.plugin_dir=join(rootDir,'plugins')
+    config.data_dir=join(rootDir,'data')
+    const pluginConfig=config.plugins||={
+        help: null,
+        config: null,
+        daemon: null,
+        login: null,
+        logs: null,
+        plugin: null,
+        status: null,
+        watcher:''
+    }
+    pluginConfig.watcher=rootDir
     fs.writeFileSync(join(rootDir,'zhin.yaml'),dump(config),'utf8')
 }
 

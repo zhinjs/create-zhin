@@ -1,7 +1,7 @@
 {
   "name": "create-zhin",
   "description": "Setup a Zhin application",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "node": "^14.18.0 || >=16"
   },
