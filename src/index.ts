@@ -25,7 +25,7 @@ const getAdapterQuestions=(adapter)=>{
                 name: 'password',
                 message: '请输入密码(不传则扫码登录)',
             }, {
-                type: () => adapter === 'icqq' ? 'list' : null,
+                type: () => adapter === 'icqq' ? 'select' : null,
                 initial: 4,
                 message: '请选择登录协议',
                 name: 'platform',
