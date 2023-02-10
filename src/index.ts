@@ -12,47 +12,50 @@ import {AxiosError} from "axios";
 const cwd = process.cwd()
 let project: string
 let rootDir: string
-const adapterQuestionMap = {
-    icqq: [
-        {
-            type: (prev, values, prompt) => values.adapter === 'icqq' ? 'number' : 'text',
-            name: 'self_id',
-            message: '请输入机器人账号',
-        },
-        {
-            type: (prev, values, prompt) => values.adapter === 'icqq' ? 'password' : null,
-            name: 'password',
-            message: '请输入密码(不传则扫码登录)',
-        }, {
-            type: (prev, values, prompt) => values.adapter === 'icqq' ? 'select' : null,
-            initial: 5,
-            message: '请选择登录协议',
-            name: 'platform',
-            choices: [
-                {
-                    title: '安卓手机',
-                    value: 1
-                },
-                {
-                    title: '安卓平板',
-                    value: 2
-                },
-                {
-                    title: '安卓手表',
-                    value: 3
-                },
-                {
-                    title: 'macos',
-                    value: 4
-                },
-                {
-                    title: 'iPad',
-                    selected: true,
-                    value: 5
-                }
-            ]
-        }
-    ]
+const getAdapterQuestions=(adapter)=>{
+    const adapterQuestionMap = {
+        icqq: [
+            {
+                type: () => adapter === 'icqq' ? 'number' : 'text',
+                name: 'self_id',
+                message: '请输入机器人账号',
+            },
+            {
+                type: () => adapter === 'icqq' ? 'password' : null,
+                name: 'password',
+                message: '请输入密码(不传则扫码登录)',
+            }, {
+                type: () => adapter === 'icqq' ? 'select' : null,
+                initial: 5,
+                message: '请选择登录协议',
+                name: 'platform',
+                choices: [
+                    {
+                        title: '安卓手机',
+                        value: 1
+                    },
+                    {
+                        title: '安卓平板',
+                        value: 2
+                    },
+                    {
+                        title: '安卓手表',
+                        value: 3
+                    },
+                    {
+                        title: 'macos',
+                        value: 4
+                    },
+                    {
+                        title: 'iPad',
+                        selected: true,
+                        value: 5
+                    }
+                ]
+            }
+        ]
+    }
+    return adapterQuestionMap[adapter]
 }
 const argv = parse(process.argv.slice(2), {
     alias: {
@@ -199,7 +202,7 @@ async function addBot() {
                 }
             ]
         })
-    const adapterParam = await prompts(adapterQuestionMap[adapter])
+    const adapterParam = await prompts(getAdapterQuestions(adapter))
     const {master} = await prompts([
         {
             type: () => adapter === 'icqq' ? 'number' : 'text',
