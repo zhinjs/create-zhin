@@ -13,10 +13,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zhinjs/create-zhin.git"
+    "url": "git+https://github.com/zhinjs/zhin.git",
+    "directory": "packages/create-zhin"
   },
   "bugs": {
-    "url": "https://github.com/zhinjs/create-zhin/issues"
+    "url": "https://github.com/zhinjs/zhin/issues"
   },
   "scripts": {
     "build": "tsc --build"
