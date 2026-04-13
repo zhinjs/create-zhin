@@ -2,13 +2,11 @@
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",
-    "baseUrl": ".",
     "target": "ES2019",
     "module": "commonjs",
     "declaration": true,
-    "paths": {
-      "@/*": ["src/*"]
-    }
+    "skipLibCheck": true,
+    "ignoreDeprecations": "6.0"
   },
   "include": ["./src/"]
 }

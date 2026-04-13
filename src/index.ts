@@ -12,7 +12,7 @@ import {AxiosError} from "axios";
 const cwd = process.cwd()
 let project: string
 let rootDir: string
-const getAdapterQuestions=(adapter)=>{
+const getAdapterQuestions=(adapter: string)=>{
     const adapterQuestionMap = {
         icqq: [
             {
@@ -55,7 +55,7 @@ const getAdapterQuestions=(adapter)=>{
             }
         ]
     }
-    return adapterQuestionMap[adapter]
+    return adapterQuestionMap[adapter as keyof typeof adapterQuestionMap]
 }
 const argv = parse(process.argv.slice(2), {
     alias: {
@@ -148,7 +148,7 @@ async function scaffold() {
             stream.on('finish', resolve)
             stream.on('error', reject)
         })
-    } catch (err) {
+    } catch (err: any) {
         if (err instanceof AxiosError || !err.response) throw err
         const {status, statusText} = err.response
         console.log(`request failed with status code ${status} ${statusText}`)

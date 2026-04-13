@@ -1,7 +1,7 @@
 {
   "name": "create-zhin",
   "description": "Setup a Zhin application",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "engines": {
     "node": "^14.18.0 || >=16"
   },
@@ -16,7 +16,10 @@
     "url": "git+https://github.com/zhinjs/create-zhin.git"
   },
   "bugs": {
-    "url": "https://github.com/zhinjs/create-zhini/issues"
+    "url": "https://github.com/zhinjs/create-zhin/issues"
+  },
+  "scripts": {
+    "build": "tsc --build"
   },
   "keywords": [
     "bot",
